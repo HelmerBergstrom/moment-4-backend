@@ -3,6 +3,33 @@
 const express = require("express");
 const router = express.Router();
 
+mongoose.connect("mongodb://127.0.0.1:27017/user-pass").then(() => {
+    console.log("Connected to MongoDB :)")
+}).catch((error) => {
+    console.log("Error connecting to database: " + error); 
+});
+
+const UserSchema = new mongoose.Schema({
+    username: {
+        type: String,
+        required: true,
+        unique: true,
+        trim: true 
+    },
+    email: {
+        type: String,
+        required: true
+    },
+    password: {
+        type: String,
+        required: true
+    },
+    dateCreated: {
+        type: Date,
+        default: Date.now
+    }
+}); 
+
 router.post("/register", async (req, res) => {
     try {
         const { username, password, email } = req.body;

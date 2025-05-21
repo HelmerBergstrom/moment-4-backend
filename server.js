@@ -12,29 +12,6 @@ app.use(bodyParser.json());
 
 app.use("/api", theRoutes);
 
-mongoose.connect("mongodb://127.0.0.1:27017/user-pass").then(() => {
-    console.log("Connected to MongoDB :)")
-}).catch((error) => {
-    console.log("Error connecting to database: " + error); 
-});
-
-// const UserSchema = new mongoose.Schema({
-//     username: {
-//         type: String,
-//         required: true
-//     },
-//     email: {
-//         type: String,
-//         required: true
-//     },
-//     password: {
-//         type: String,
-//         required: true
-//     },
-//     dateCreated: {
-//         type: Date,
-//     }
-// }); 
 
 app.listen(port, () => {
     console.log("Server running on http://localhost:" + port)
