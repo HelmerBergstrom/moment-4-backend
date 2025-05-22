@@ -3,7 +3,6 @@
 const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
 
 mongoose.connect("mongodb://127.0.0.1:27017/user-pass").then(() => {
     console.log("Connected to MongoDB :)")
@@ -11,60 +10,8 @@ mongoose.connect("mongodb://127.0.0.1:27017/user-pass").then(() => {
     console.log("Error connecting to database: " + error); 
 });
 
-const UserSchema = new mongoose.Schema({
-    username: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true 
-    },
-    email: {
-        type: String,
-        required: true
-    },
-    password: {
-        type: String,
-        required: true
-    },
-    dateCreated: {
-        type: Date,
-        default: Date.now
-    }
-}); 
-
-// Kryptera lösenord.
-UserSchema.pre("save", async function(next) {
-    try {
-        if(this.isNew || this.isModified("password")) {
-            const hashedPass = await bcrypt.hash(this.password, 10)
-            this.password = hashedPass;
-        }
-
-        next();
-    } catch(error) {
-        next(error)
-    };
-});
-
-// Registrera användare.
-UserSchema.statics.register = async (username, email, password) => {
-    try {
-        const user = new this({ username, email, password });
-        await user.save();
-        return user;
-    } catch(error) {
-        throw error;
-    }
-};
-
-// Jämför lösenord.
-UserSchema.methods.comparePass = async (password) => {
-    try {
-        return await bcrypt.compare(password, this.password);
-    } catch(error) {
-         throw error;
-    }
-}
+// Användare-modell.
+const User = require("../models/User");
 
 router.post("/register", async (req, res) => {
     try {
@@ -78,17 +25,21 @@ router.post("/register", async (req, res) => {
             return res.status(400).json({ error: "Vänligen fyll i användarnamn!" });
         }
 
-        if(!password) {
-            array.push("Vänligen skapa ett lösenord!")
-            return res.status(400).json({ error: "Vänligen fyll i lösenord!" });
-        }
         // Epost måste inkludera @ och en punkt.
         if(!email || !email.includes("@" && ".")) {
             array.push("Vänligen ange epost!")
             return res.status(400).json({ error: "Vänligen fyll i epost!" });
         }
 
+        if(!password) {
+            array.push("Vänligen skapa ett lösenord!")
+            return res.status(400).json({ error: "Vänligen fyll i lösenord!" });
+        }
+
         // Om det har fyllt i korrekt = skapa användare.
+        const user = new User({ username, email, password });
+        await user.save();
+
         res.status(201).json({ message: "Användare skapad!"});
     } catch(error) {
         res.status(500).json({ error: "Server error!"});
@@ -98,10 +49,27 @@ router.post("/register", async (req, res) => {
 
 router.post("/login", async (req, res) => {
     try {
+        const { username, password } = req.body;
 
-        res.status(201).json({ message: "Logged in! "});
+        if(!username || !password) {
+            return res.status(400).json({ error: "Felaktigt användarnamn/lösenord..." })
+        }
+
+        const user = await User.findOne({ username });
+        if(!user) {
+            return res.status(401).json({ error: "Felaktigt användarnamn/lösenord..." });
+        }
+
+        const passMatch = await user.comparePass(password);
+        if(!passMatch) {
+            return res.status(401).json({ error: "Felaktigt användarnamn/lösenord..." })
+        } else {
+            res.status(200).json({ message: "Användare inloggad!" });
+        }
+
     } catch(error) {
         res.status(500).json({ error: "Server error!" });
+        console.error(error);
     }
 });
 
