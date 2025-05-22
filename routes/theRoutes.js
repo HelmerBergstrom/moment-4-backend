@@ -2,6 +2,8 @@
 
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 
 mongoose.connect("mongodb://127.0.0.1:27017/user-pass").then(() => {
     console.log("Connected to MongoDB :)")
@@ -29,6 +31,40 @@ const UserSchema = new mongoose.Schema({
         default: Date.now
     }
 }); 
+
+// Kryptera lösenord.
+UserSchema.pre("save", async function(next) {
+    try {
+        if(this.isNew || this.isModified("password")) {
+            const hashedPass = await bcrypt.hash(this.password, 10)
+            this.password = hashedPass;
+        }
+
+        next();
+    } catch(error) {
+        next(error)
+    };
+});
+
+// Registrera användare.
+UserSchema.statics.register = async (username, email, password) => {
+    try {
+        const user = new this({ username, email, password });
+        await user.save();
+        return user;
+    } catch(error) {
+        throw error;
+    }
+};
+
+// Jämför lösenord.
+UserSchema.methods.comparePass = async (password) => {
+    try {
+        return await bcrypt.compare(password, this.password);
+    } catch(error) {
+         throw error;
+    }
+}
 
 router.post("/register", async (req, res) => {
     try {
