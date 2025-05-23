@@ -16,7 +16,7 @@ const User = require("../models/User");
 
 router.post("/register", async (req, res) => {
     try {
-        const { username, password, email } = req.body;
+        const { username, email, firstName, lastName, age, password } = req.body;
 
         let array = [];
 
@@ -28,17 +28,32 @@ router.post("/register", async (req, res) => {
 
         // Epost måste inkludera @ och en punkt.
         if(!email || !email.includes("@" && ".")) {
-            array.push("Vänligen ange epost!")
-            return res.status(400).json({ error: "Vänligen fyll i epost!" });
+            array.push("Vänligen ange din epost!")
+            return res.status(400).json({ error: "Vänligen ange din epost!" });
+        }
+
+        if(!firstName) {
+            array.push("Vänligen ange ditt förnamn!");
+            return res.status(400).json({ error: "Vänligen ange ditt förnamn!" });
+        }
+
+        if(!lastName) {
+            array.push("Vänligen ange ditt efternamn!");
+            return res.status(400).json({ error: "Vänligen ange ditt efternamn!" });
+        }
+
+        if(!age || age < 15) {
+            array.push("Vänligen fyll i hur gammal du är!");
+            return res.status(400).json({ error: "Vänligen fyll hur gammal du är!" });
         }
 
         if(!password) {
             array.push("Vänligen skapa ett lösenord!")
-            return res.status(400).json({ error: "Vänligen fyll i lösenord!" });
+            return res.status(400).json({ error: "Vänligen skapa ett lösenord!" });
         }
 
         // Om det har fyllt i korrekt = skapa användare.
-        const user = new User({ username, email, password });
+        const user = new User({ username, email, firstName, lastName, age, password });
         await user.save();
 
         res.status(201).json({ message: "Användare skapad!"});

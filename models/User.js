@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const { request } = require("express");
 
 const UserSchema = new mongoose.Schema({
     username: {
@@ -10,6 +11,18 @@ const UserSchema = new mongoose.Schema({
     },
     email: {
         type: String,
+        required: true
+    },
+    firstName: {
+        type: String,
+        required: true
+    },
+    lastName: {
+        type: String,
+        required: true
+    },
+    age: {
+        type: Number,
         required: true
     },
     password: {
@@ -37,9 +50,9 @@ UserSchema.pre("save", async function(next) {
 });
 
 // Registrera användare.
-UserSchema.statics.register = async function (username, email, password) {
+UserSchema.statics.register = async function (username, email, firstName, lastName, age, password) {
     try {
-        const user = new this({ username, email, password });
+        const user = new this({ username, email, firstName, lastName, age, password });
         await user.save();
         return user;
     } catch(error) {
