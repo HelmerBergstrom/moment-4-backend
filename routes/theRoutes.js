@@ -22,8 +22,8 @@ router.post("/register", async (req, res) => {
 
         // Användarnamn måsta vara minst 7 tecken långt.
         if(!username || username.length < 7) {
-            array.push("Vänligen skapa ett användarnamn!")
-            return res.status(400).json({ error: "Vänligen fyll i användarnamn!" });
+            array.push("Vänligen skapa ett användarnamn, måste innehålla minst 7 tecken!")
+            return res.status(400).json({ error: "Vänligen fyll i användarnamn, måste innehålla minst 7 tecken!" });
         }
 
         // Epost måste inkludera @ och en punkt.
@@ -43,8 +43,8 @@ router.post("/register", async (req, res) => {
         }
 
         if(!age || age < 15) {
-            array.push("Vänligen fyll i hur gammal du är!");
-            return res.status(400).json({ error: "Vänligen fyll hur gammal du är!" });
+            array.push("Vänligen fyll i hur gammal du är, minst 15 år måste du vara!");
+            return res.status(400).json({ error: "Vänligen fyll hur gammal du är, minst 15 år måste du vara!" });
         }
 
         if(!password) {

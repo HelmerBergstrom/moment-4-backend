@@ -4,12 +4,17 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const jwt = require("jsonwebtoken");
 const theRoutes = require("./routes/theRoutes");
+const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
 const port = process.env.PORT || 3001;
 app.use(bodyParser.json());
-
+app.use(cors({
+    origin: "http://127.0.0.1:5500",
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
 app.use("/api", theRoutes);
 
 app.get("/api/secret", authenticateToken, (req, res) => {
