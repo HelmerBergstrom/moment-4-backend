@@ -48,43 +48,12 @@ UserSchema.pre("save", async function(next) {
     };
 });
 
-// Registrera användare.
-UserSchema.statics.register = async function (username, email, firstName, lastName, age, password) {
-    try {
-        const user = new this({ username, email, firstName, lastName, age, password });
-        await user.save();
-        return user;
-    } catch(error) {
-        throw error;
-    }
-};
-
 // Jämför lösenord.
 UserSchema.methods.comparePass = async function (password) {
     try {
         return await bcrypt.compare(password, this.password);
     } catch(error) {
          throw error;
-    }
-};
-
-UserSchema.statics.login = async function (username, password ) {
-    try {
-        const user = await this.findOne({ username });
-
-        if(!user) {
-            throw new Error("Felaktigt användarnamn/lösenord...")
-        }
-
-        const passMatch = await user.comparePass(password);
-
-        if(!passMatch) {
-            throw new Error("Felaktigt användarnamn/lösenord...")
-        }
-
-        return user;
-    } catch(error) {
-        throw error;
     }
 };
 
